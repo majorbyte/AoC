@@ -1,61 +1,30 @@
-const fs = require('fs');
-
-const mapStep = (data, from, to) => data[from] 
-  ? data[from].links.push(to)
-  : data[from] = {links:[to]}
-
-const map = data => data.reduce((p,c) => {
-  const step = c.split('-');
-  mapStep(p,step[0],step[1]);
-  mapStep(p,step[1],step[0]);
-  return p;
-},{});
-
+let double = false;
+const map = data => data.reduce( (map,[from, to]) => (
+  map.set(from, (map.get(from) || []).concat(to)), 
+  map.set(to, (map.get(to) || []).concat(from))
+  )
+,new Map());
 
 const isUpperCase = c => c === c.toUpperCase();
 
-const getAvailableSteps = (links, path, double) => {
+const getAvailableSteps = (links, path) => {
+  let check = (path,step) => double 
+    ? isUpperCase(step) || !path.includes(step) || !path.filter(x => !isUpperCase(x)).some((value, index, arr) => arr.indexOf(value) < index ) 
+    : isUpperCase(step) || !path.includes(step)
+    ;
 
-  if (!double) return links.filter(x => isUpperCase(x) || path.indexOf(x) === -1) ;
-  
-  let plausible = path
-    .filter(x => !isUpperCase(x) && ['start','end'].indexOf(x) <0)
-    .reduce((acc, e) => acc.set(e, (acc.get(e) || 0) + 1), new Map());
-
-  let hasDouble = [...plausible].find(([k,v]) => v === 2);
-  plausible = new Map([...plausible].filter(([k,v]) => hasDouble ? v < 1 : v < 2));
-  
-  return links.filter(x => isUpperCase(x) || path.indexOf(x) === -1 || [...plausible.keys()].indexOf(x) > -1);
+  return links.filter(step => step !== 'start' && check(path,step)) ;
 }
-  
+const parse = (current, path) => {
+  if (current == 'end') return 1;    
 
-const getStep = (cave, path, paths, double) => {
-  const segments = path.split(',');
-  const current = segments[segments.length-1];
-  if (current == 'end') {
-    if (paths.indexOf(path) < 0) paths.push(path);
-    return;
-  }
+  let steps = getAvailableSteps(cave.get(current),path);
 
-  const available = getAvailableSteps(cave[current].links,segments, double);
-  for(const pos of available){
-    getStep(cave,`${path},${pos}`,paths, double);
-  }
-  
-  return path;
+  return steps.map(step => parse(step, [...path,step])).reduce((p,c) => p+c,0)
 }
 
-const route = (data, allowDouble) => {
-  const cave = map(data);
-  const paths = [];
-  for(const pos of cave.start.links){
-    getStep(cave,`start,${pos}`,paths,allowDouble);
-  }
-  console.log(paths.length);
-}
+const cave = map(require('fs').readFileSync("pathing.input", { encoding: "utf-8" }).split('\r\n').map(x => x.split('-')));
 
-
-fs.readFile('./pathing.input', 'utf-8', (_,data) => {
-  route(data.split('\r\n'),false);
-  route(data.split('\r\n'),true);
-});
+console.log(parse('start',[]));
+double = true;
+console.log(parse('start',[]));
