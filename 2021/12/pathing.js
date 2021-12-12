@@ -1,5 +1,4 @@
 const fs = require('fs');
-const path = require('path');
 
 const mapStep = (data, from, to) => data[from] 
   ? data[from].links.push(to)
@@ -18,11 +17,15 @@ const isUpperCase = c => c === c.toUpperCase();
 const getAvailableSteps = (links, path, double) => {
 
   if (!double) return links.filter(x => isUpperCase(x) || path.indexOf(x) === -1) ;
-  return links.filter(x => 
-    isUpperCase(x) 
-    || (x !== double 
-      ? path.indexOf(x) === -1 
-      : (path.filter(n => n == double).length < 2 && ['start','end'].indexOf(x) <0)));
+  
+  let plausible = path
+    .filter(x => !isUpperCase(x) && ['start','end'].indexOf(x) <0)
+    .reduce((acc, e) => acc.set(e, (acc.get(e) || 0) + 1), new Map());
+
+  let hasDouble = [...plausible].find(([k,v]) => v === 2);
+  plausible = new Map([...plausible].filter(([k,v]) => hasDouble ? v < 1 : v < 2));
+  
+  return links.filter(x => isUpperCase(x) || path.indexOf(x) === -1 || [...plausible.keys()].indexOf(x) > -1);
 }
   
 
@@ -44,22 +47,10 @@ const getStep = (cave, path, paths, double) => {
 
 const route = (data, allowDouble) => {
   const cave = map(data);
-  const paths = []
-  if (allowDouble){
-    for(const segment of Object.keys(cave).filter(x => !isUpperCase(x) && ['start','end'].indexOf(x) <0 ))
-    {  
-      console.log(segment)
-      for(const pos of cave.start.links){
-        getStep(cave,`start,${pos}`,paths,segment);
-      } 
-    }
-
-  } else {
-    for(const pos of cave.start.links){
-      getStep(cave,`start,${pos}`,paths);
-    }
+  const paths = [];
+  for(const pos of cave.start.links){
+    getStep(cave,`start,${pos}`,paths,allowDouble);
   }
-  console.dir(paths.sort());
   console.log(paths.length);
 }
 
