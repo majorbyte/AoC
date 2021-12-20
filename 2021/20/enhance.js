@@ -45,9 +45,10 @@ const part1 = data => {
 
 
   image = data[1].split('\r\n').map(x => x.replace(/\./g,'0').replace(/#/g, '1').split(''));
-  image = enhance();
-  if (flipping) background = background === '0' ? '1' : '0';
-  image = enhance();
+  for (let x = 0; x< 50;x++){
+    image = enhance();
+    if (flipping) background = background === '0' ? '1' : '0';
+  }
   console.dir(image.map(y => y.join('')).join('').replace(/0/g,'').length);
 }
 
