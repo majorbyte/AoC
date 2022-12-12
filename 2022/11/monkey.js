@@ -34,8 +34,8 @@ const monkeys = [
 const inspectMonkey = (monkey) => {
   for(let x = monkey.items.length-1;x > -1; x--) 
     monkeys[monkey.where[monkey.check(x)+0]].items.push(monkey.items.splice(x,1)[0]);
-  }
-const inspect = () => monkeys.forEach(inspectMonkey);
-for(let x = 0; x<10000;x++) inspect();
+}
+
+for(let x = 0; x<10000;x++) monkeys.forEach(inspectMonkey);
 
 console.dir(monkeys) ;
