@@ -56,7 +56,7 @@ fn get_location(s: String) -> i64{
     let mut min =2147483647;
     let mut n = 0;
     while n < seeds.len(){
-        if seeds[n] < min && seeds[n] != 0 { min = seeds[n];} //! why
+        if seeds[n] < min && seeds[n] != 0 { min = seeds[n];} // why
         n+=2;
     }
     return min;
