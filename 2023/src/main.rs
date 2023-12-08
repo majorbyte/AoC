@@ -20,8 +20,7 @@ fn main() {
 //    day_five::tasktwo::task();
 //    day_six::taskone::task();
 //    day_six::tasktwo::task();
-    day_seven::taskone::task();
-    day_seven::tasktwo::task();
+    day_seven::tasks::task();
 
     day_eight::taskone::task();
     day_eight::tasktwo::task();

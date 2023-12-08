@@ -12,9 +12,9 @@ struct Hand{
 }
 
 impl Hand {
-    fn new(line: &str) -> Hand{
+    fn new(line: &str, t: &bool) -> Hand{
         let l:Vec<_> = line.split(" ").collect();
-        Hand{ hand: convert(l[0]), bid: l[1].parse::<usize>().unwrap(), value: get_hand_value(l[0])}
+        Hand{ hand: convert(l[0], t), bid: l[1].parse::<usize>().unwrap(), value: get_hand_value(l[0], t)}
     }
 }
 
@@ -47,8 +47,6 @@ impl PartialEq for Hand {
         self.cmp(other) == Ordering::Equal
     }
 }
-
-
 pub fn task() {
     parse_file();
 }
@@ -69,48 +67,49 @@ fn parse_file(){
     let mut s = String::new();
     match file.read_to_string(&mut s) {
         Err(why) => panic!("couldn't read {}: {}", display, why),
-        Ok(_) => print!("\nwinnings:{}", get_winnings(s)),
+        Ok(_) => print!("\nwinnings part 1:{}\nwinnings part 2:{}", get_winnings(&s, &false), get_winnings(&s, &true)),
     }
 
     // `file` goes out of scope, and the "hello.txt" file gets closed    
 }
 
-fn get_winnings(input: String) -> usize {
-
+fn get_winnings(input: &str, t:  &bool) -> usize {
     let lines: Vec<_> = input.split("\r\n").collect();
     let mut hands: Vec<Hand> = lines
         .iter()
-        .map(|line| Hand::new(line))
+        .map(|line| Hand::new(line, t))
         .collect();
 
-
     hands.sort_by(|a, b| a.cmp(b));
-
 
     return hands.iter().enumerate().fold(0, |sum, (i, hand)| sum + (i+1) * hand.bid);
 }
 
-fn convert(s: &str) -> String {
+fn convert(s: &str, is_task2: &bool) -> String {
     s.chars().map(|c| {
     match c {
-        '2' => 'A',
-        '3' => 'B',
-        '4' => 'C',
-        '5' => 'D',
-        '6' => 'E',
-        '7' => 'F',
-        '8' => 'G',
-        '9' => 'H',
-        'T' => 'I',
-        'J' => 'J',
-        'Q' => 'K',
-        'K' => 'L',
-        'A' => 'M',
+        '2' => 'B',
+        '3' => 'C',
+        '4' => 'D',
+        '5' => 'E',
+        '6' => 'F',
+        '7' => 'G',
+        '8' => 'H',
+        '9' => 'I',
+        'T' => 'J',
+        'J' => match is_task2 {
+            false => 'K',
+            true => 'A',
+        }
+        'Q' => 'L',
+        'K' => 'M',
+        'A' => 'N',
          _ => 'Z'
     }}).collect::<String>()
 }
 
-fn get_hand_value(hand: &str) -> u32 {
+fn get_hand_value(hand: &str, is_task2: &bool) -> u32 {
+    let offset = hand.matches("J").count();
     let mut s = hand.chars().collect::<Vec<_>>();
     s.sort();
     let c = s.iter().collect::<String>();
@@ -132,24 +131,48 @@ fn get_hand_value(hand: &str) -> u32 {
 
     output.sort_by_key(|g| Reverse(g.len()));
 
-    match output.len(){
-        1 => 6, //five of a kind
-        2 => { 
-            match output[0].len(){
-                3 => 4, // full house
-                4 => 5, // four of a kind
-                _ => 0
-            }
-        },
-        3 => {
-            match output[0].len(){
-                3 => 3, // three of a kind
-                2 => 2, // two pair
-                _ => 0
-            }
-        },
-        4 => 1, // one pair
-        _ => 0, // high card
-    }
+    
+    if offset > 0  && *is_task2 {
+        let mut y = 0;
+        let mut biggest_group = output[0].len()+ offset;
+        while y < output.len()-1 && output[y].contains("J"){
+            y += 1;
+            biggest_group = output[y].len()+ offset;
+        }
 
+        if biggest_group > 5 { biggest_group = 5;}
+    
+        match biggest_group{
+            5 => 12, // five of a kind
+            4 => 10, // four of a kind 
+            3 =>  {  
+                match output[1].len(){
+                    2 => 8, // full house
+                    _ => 6, // three of a kind
+                }
+            }, 
+            2 => 2, // one pair
+            _ => 0, // high card
+        }
+    } else {
+        match output.len(){
+            1 => 12, //five of a kind
+            2 => { 
+                match output[0].len(){
+                    3 => 8, // full house
+                    4 => 10, // four of a kind
+                    _ => 0
+                }
+            },
+            3 => {
+                match output[0].len(){
+                    3 => 6, // three of a kind
+                    2 => 4, // two pair
+                    _ => 0
+                }
+            },
+            4 => 2, // one pair
+            _ => 0, // high card
+        }
+    }
 }
