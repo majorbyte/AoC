@@ -4,13 +4,49 @@ use std::io::prelude::*;
 use std::path::Path;
 use core::cmp::Ordering;
 
-
+#[derive(Eq)]
 struct Hand{
     hand: String,
     bid: usize,
     value: u32
 }
 
+impl Hand {
+    fn new(line: &str) -> Hand{
+        let l:Vec<_> = line.split(" ").collect();
+        Hand{ hand: convert(l[0]), bid: l[1].parse::<usize>().unwrap(), value: get_hand_value(l[0])}
+    }
+}
+
+impl Ord for Hand {
+    fn cmp(&self, other: &Self) -> Ordering {
+        if self.value > other.value {
+            Ordering::Greater
+        } else if self.value < other.value {
+            Ordering::Less
+        } else{
+            if self.hand < other.hand {
+                Ordering::Less
+            } else if self.hand > other.hand {
+                Ordering::Greater
+            } else{
+                Ordering::Equal
+            }
+        }
+    }
+}
+
+impl PartialOrd for Hand {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl PartialEq for Hand {
+    fn eq(&self, other: &Self) -> bool {
+        self.cmp(other) == Ordering::Equal
+    }
+}
 pub fn task() {
     parse_file();
 }
@@ -42,42 +78,10 @@ fn get_winnings(input: String) -> usize {
     let lines: Vec<_> = input.split("\r\n").collect();
     let mut hands: Vec<Hand> = lines
         .iter()
-        .map(|line| {
-            let l:Vec<_> = line.split(" ").collect();
-            let cards = convert(l[0]);
-            let value = get_hand_value(cards.clone());
-            print!(" value {}", value) ;
-            Hand{ hand: cards, bid: l[1].parse::<usize>().unwrap(), value: value}
-        })
+        .map(|line| Hand::new(line))
         .collect();
 
-
-    hands.sort_by(|a, b|{
-
-        if a.value > b.value {
-             Ordering::Greater
-        } else if a.value < b.value {
-            Ordering::Less
-        } else{
-            let mut x = 0;
-            let mut ordering = Ordering::Equal;
-            let ac = a.hand.chars().collect::<Vec<_>>();
-            let bc = b.hand.chars().collect::<Vec<_>>();
-            while x < 5 {
-                if ac[x] < bc[x] { 
-                    ordering = Ordering::Less;
-                    break;
-                }
-                else if ac[x] > bc[x] { 
-                    ordering = Ordering::Greater ;
-                    break;
-                }
-                x += 1;
-            }
-            ordering
-        }
-
-    });
+    hands.sort_by(|a, b| a.cmp(b));
 
     let mut x = 0;
     let mut sum: usize = 0;
@@ -108,9 +112,8 @@ fn convert(s: &str) -> String {
     }}).collect::<String>()
 }
 
-
-fn get_hand_value(hand: String) -> u32 {
-    let offset = hand.matches("A").count();
+fn get_hand_value(hand: &str) -> u32 {
+    let offset = hand.matches("J").count();
     let mut s = hand.chars().collect::<Vec<_>>();
     s.sort();
     let c = s.iter().collect::<String>();
@@ -136,7 +139,7 @@ fn get_hand_value(hand: String) -> u32 {
     if offset > 0 {
         let mut y = 0;
         let mut biggest_group = output[0].len()+ offset;
-        while y < output.len()-1 && output[y].contains("A"){
+        while y < output.len()-1 && output[y].contains("J"){
             y += 1;
             biggest_group = output[y].len()+ offset;
         }
@@ -175,6 +178,4 @@ fn get_hand_value(hand: String) -> u32 {
             _ => 0, // high card
         }
     }
-
-
 }

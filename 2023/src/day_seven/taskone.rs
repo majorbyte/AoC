@@ -4,12 +4,50 @@ use std::io::prelude::*;
 use std::path::Path;
 use core::cmp::Ordering;
 
-
+#[derive(Eq)]
 struct Hand{
     hand: String,
     bid: usize,
     value: u32
 }
+
+impl Hand {
+    fn new(line: &str) -> Hand{
+        let l:Vec<_> = line.split(" ").collect();
+        Hand{ hand: convert(l[0]), bid: l[1].parse::<usize>().unwrap(), value: get_hand_value(l[0])}
+    }
+}
+
+impl Ord for Hand {
+    fn cmp(&self, other: &Self) -> Ordering {
+        if self.value > other.value {
+            Ordering::Greater
+        } else if self.value < other.value {
+            Ordering::Less
+        } else{
+            if self.hand < other.hand {
+                Ordering::Less
+            } else if self.hand > other.hand {
+                Ordering::Greater
+            } else{
+                Ordering::Equal
+            }
+        }
+    }
+}
+
+impl PartialOrd for Hand {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl PartialEq for Hand {
+    fn eq(&self, other: &Self) -> bool {
+        self.cmp(other) == Ordering::Equal
+    }
+}
+
 
 pub fn task() {
     parse_file();
@@ -42,40 +80,11 @@ fn get_winnings(input: String) -> usize {
     let lines: Vec<_> = input.split("\r\n").collect();
     let mut hands: Vec<Hand> = lines
         .iter()
-        .map(|line| {
-            let l:Vec<_> = line.split(" ").collect();
-            let cards = convert(l[0]);
-            Hand{ hand: cards.clone() , bid: l[1].parse::<usize>().unwrap(), value: get_hand_value(cards)}
-        })
+        .map(|line| Hand::new(line))
         .collect();
 
 
-    hands.sort_by(|a, b|{
-
-        if a.value > b.value {
-             Ordering::Greater
-        } else if a.value < b.value {
-            Ordering::Less
-        } else{
-            let mut x = 0;
-            let mut ordering = Ordering::Equal;
-            let ac = a.hand.chars().collect::<Vec<_>>();
-            let bc = b.hand.chars().collect::<Vec<_>>();
-            while x < 5 {
-                if ac[x] < bc[x] { 
-                    ordering = Ordering::Less;
-                    break;
-                }
-                else if ac[x] > bc[x] { 
-                    ordering = Ordering::Greater ;
-                    break;
-                }
-                x += 1;
-            }
-            ordering
-        }
-
-    });
+    hands.sort_by(|a, b| a.cmp(b));
 
     let mut x = 0;
     let mut sum: usize = 0;
@@ -106,7 +115,7 @@ fn convert(s: &str) -> String {
     }}).collect::<String>()
 }
 
-fn get_hand_value(hand: String) -> u32 {
+fn get_hand_value(hand: &str) -> u32 {
     let mut s = hand.chars().collect::<Vec<_>>();
     s.sort();
     let c = s.iter().collect::<String>();
