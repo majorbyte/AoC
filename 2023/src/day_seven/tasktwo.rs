@@ -83,13 +83,7 @@ fn get_winnings(input: String) -> usize {
 
     hands.sort_by(|a, b| a.cmp(b));
 
-    let mut x = 0;
-    let mut sum: usize = 0;
-    while x < hands.len(){
-        sum += (x+1) * hands[x].bid;
-        x += 1;
-    }
-    return sum;
+    return hands.iter().enumerate().fold(0, |sum, (i, hand)| sum + (i+1) * hand.bid);
 }
 
 fn convert(s: &str) -> String {
