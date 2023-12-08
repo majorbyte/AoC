@@ -2,8 +2,9 @@
 //mod day_two;
 //mod day_three;
 //mod day_four;
-mod day_five;
-mod day_six;
+//mod day_five;
+//mod day_six;
+mod day_seven;
 
 fn main() {
 //    day_one::taskone::task();
@@ -14,9 +15,11 @@ fn main() {
 //    day_three::tasktwo::task();
 //    day_four::taskone::task();
 //    day_four::tasktwo::task();
-    day_five::taskone::task();
-    day_five::tasktwo::task();
+//    day_five::taskone::task();
+//    day_five::tasktwo::task();
 
-    day_six::taskone::task();
-    day_six::tasktwo::task();
+//    day_six::taskone::task();
+//    day_six::tasktwo::task();
+    day_seven::taskone::task();
+    day_seven::tasktwo::task();
 }
