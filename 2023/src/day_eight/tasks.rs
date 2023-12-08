@@ -39,23 +39,37 @@ fn parse_file(){
     let mut s = String::new();
     match file.read_to_string(&mut s) {
         Err(why) => panic!("couldn't read {}: {}", display, why),
-        Ok(_) => print!("\nsteps:{}", get_total_steps(s)),
+        Ok(_) => {
+            let (input, nodes) = get_nodes(&s);
+            print!("\nsteps part 1:{}\nsteps part 2:{}", get_steps(&input, &nodes),get_total_steps(&input, &nodes))
+        },
     }
 
     // `file` goes out of scope, and the "hello.txt" file gets closed    
 }
 
-fn get_total_steps(s: String) -> usize {
+fn get_nodes(s: &str) -> (&str, Vec<Node>) {
     let lines: Vec<_> = s.split("\r\n").collect();
     let input = lines[0];
     
-    let nodes: Vec<Node> = lines[1..]
+    let nodes = lines[1..]
         .iter()
         .map(|line| Node::new(line))
         .collect();
 
+    return (input, nodes);
+}
+
+fn get_steps(input: &str, nodes: &Vec<Node>) -> usize {
+    let node = get_node(&nodes, "AAA");
+    let end_node = get_node(&nodes, "ZZZ");
+
+    return calculate_steps(input, &nodes, &node, Some(&end_node));
+}
+
+fn get_total_steps(input: &str, nodes: &Vec<Node>) -> usize {
     let a_nodes: Vec<&Node> = nodes.iter().filter(|&n| n.name.ends_with("A")).collect::<Vec<&Node>>();
-    let steps = a_nodes.iter().map(|&n| get_steps(input, &nodes, n)).collect::<Vec<_>>();
+    let steps = a_nodes.iter().map(|&n| calculate_steps(input, &nodes, &n, Option::None)).collect::<Vec<_>>();
 
     let mut total = steps[0];
     let mut x = 1;
@@ -66,19 +80,8 @@ fn get_total_steps(s: String) -> usize {
     return total;
 }
 
-
-fn greates_common_divider(mut x: usize, mut y: usize) -> usize {
-    while y > 0 {
-        let r = x % y;
-        x = y;
-        y = r;
-    }
-    x
-}
-
-fn get_steps(input: &str, nodes: & Vec<Node>, node_start: &Node) -> usize{
-
-    let mut node = node_start;
+fn calculate_steps(input: &str, nodes: &Vec<Node>, start_node: &Node, end_node: Option<&Node>)-> usize{
+    let mut node = start_node;
     let mut steps = 0;
     loop {
         let chars = input.chars();
@@ -90,11 +93,21 @@ fn get_steps(input: &str, nodes: & Vec<Node>, node_start: &Node) -> usize{
                 'R' => node = get_node(&nodes, &node.right),
                 _ => panic!("wut")
             }
-            if node.name.ends_with("Z") { return steps}
+            if end_node.is_none() && node.name.ends_with("Z") { return steps} // task 2
+            else if !end_node.is_none() && node.name == end_node.unwrap().name { return steps;} // task 1
         }
     }
 }
 
-fn get_node<'a>(nodes: &'a Vec<Node>, name: &str) -> &'a Node{
+fn greates_common_divider(mut x: usize, mut y: usize) -> usize {
+    while y > 0 {
+        let r = x % y;
+        x = y;
+        y = r;
+    }
+    x
+}
+
+fn get_node<'a>(nodes: &'a Vec<Node>, name: &str) -> &'a Node {
     return nodes.iter().find(|&n| n.name == name).unwrap();
 }

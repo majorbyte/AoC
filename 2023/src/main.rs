@@ -21,7 +21,5 @@ fn main() {
 //    day_six::taskone::task();
 //    day_six::tasktwo::task();
     day_seven::tasks::task();
-
-    day_eight::taskone::task();
-    day_eight::tasktwo::task();
+    day_eight::tasks::task();
 }
