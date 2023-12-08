@@ -71,13 +71,7 @@ fn get_total_steps(input: &str, nodes: &Vec<Node>) -> usize {
     let a_nodes: Vec<&Node> = nodes.iter().filter(|&n| n.name.ends_with("A")).collect::<Vec<&Node>>();
     let steps = a_nodes.iter().map(|&n| calculate_steps(input, &nodes, &n, Option::None)).collect::<Vec<_>>();
 
-    let mut total = steps[0];
-    let mut x = 1;
-    while x < steps.len(){
-        total = (total * steps[x]) / greates_common_divider(total, steps[x]);
-        x+=1;
-    }
-    return total;
+    return steps.into_iter().fold(1, |total, step| (total * step) / greates_common_divider(total, step));
 }
 
 fn calculate_steps(input: &str, nodes: &Vec<Node>, start_node: &Node, end_node: Option<&Node>)-> usize{
