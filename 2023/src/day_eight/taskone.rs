@@ -9,6 +9,18 @@ struct Node{
     right: String
 }
 
+impl Node{
+    fn new(line: &str) -> Node{
+        let l:Vec<_> = line.split(" = ").collect();
+        let t:Vec<_> = l[1].split(", ").collect();
+        Node{
+            name: l[0].to_string(), 
+            left: t[0].replace("(",""), 
+            right:t[1].replace(")","")
+        }
+    }
+}
+
 pub fn task() {
     parse_file();
 }
@@ -41,14 +53,7 @@ fn get_steps(s: String) -> u32 {
     
     let nodes: Vec<Node> = lines[1..]
         .iter()
-        .map(|line| {
-            let l:Vec<_> = line.split(" = ").collect();
-            let t:Vec<_> = l[1].split(", ").collect();
-            Node{
-                name: l[0].to_string(), 
-                left: t[0].replace("(",""), 
-                right:t[1].replace(")","")
-            }})
+        .map(|line| Node::new(line))
         .collect();
 
     let mut node = get_node(&nodes, "AAA");
@@ -66,7 +71,7 @@ fn get_steps(s: String) -> u32 {
                 'R' => node = get_node(&nodes, &node.right),
                 _ => panic!("wut")
             }
-            if node.name == end_node.name { return steps}
+            if node.name == end_node.name { return steps;}
         }
     }
 
@@ -74,14 +79,6 @@ fn get_steps(s: String) -> u32 {
     0
 }
 
-fn get_node<'a>(nodes: &'a Vec<Node>, name: &str) -> &'a Node{
-
-    let mut x = 0;
-    while x < nodes.len(){
-        if nodes[x].name == name{
-            return &nodes[x];
-        }
-        x+=1;
-    }
-    panic!("wat");
+fn get_node<'a>(nodes: &'a Vec<Node>, name: &str) -> &'a Node {
+    return nodes.iter().find(|&n| n.name == name).unwrap();
 }

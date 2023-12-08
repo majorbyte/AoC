@@ -8,10 +8,21 @@ struct Node{
     right: String
 }
 
+impl Node{
+    fn new(line: &str) -> Node{
+        let l:Vec<_> = line.split(" = ").collect();
+        let t:Vec<_> = l[1].split(", ").collect();
+        Node{
+            name: l[0].to_string(), 
+            left: t[0].replace("(",""), 
+            right:t[1].replace(")","")
+        }
+    }
+}
+
 pub fn task() {
     parse_file();
 }
-
 
 fn parse_file(){
     // Create a path to the desired file
@@ -28,26 +39,19 @@ fn parse_file(){
     let mut s = String::new();
     match file.read_to_string(&mut s) {
         Err(why) => panic!("couldn't read {}: {}", display, why),
-        Ok(_) => print!("\nwinnings:{}", get_total_steps(s)),
+        Ok(_) => print!("\nsteps:{}", get_total_steps(s)),
     }
 
     // `file` goes out of scope, and the "hello.txt" file gets closed    
 }
 
-fn get_total_steps(s: String) -> u128 {
+fn get_total_steps(s: String) -> usize {
     let lines: Vec<_> = s.split("\r\n").collect();
     let input = lines[0];
     
     let nodes: Vec<Node> = lines[1..]
         .iter()
-        .map(|line| {
-            let l:Vec<_> = line.split(" = ").collect();
-            let t:Vec<_> = l[1].split(", ").collect();
-            Node{
-                name: l[0].to_string(), 
-                left: t[0].replace("(",""), 
-                right:t[1].replace(")","")
-            }})
+        .map(|line| Node::new(line))
         .collect();
 
     let a_nodes: Vec<&Node> = nodes.iter().filter(|&n| n.name.ends_with("A")).collect::<Vec<&Node>>();
@@ -59,9 +63,7 @@ fn get_total_steps(s: String) -> u128 {
         total = (total * steps[x]) / greates_common_divider(total, steps[x]);
         x+=1;
     }
-
-    println!("\n{}",total);
-    return 0;
+    return total;
 }
 
 
@@ -94,12 +96,5 @@ fn get_steps(input: &str, nodes: & Vec<Node>, node_start: &Node) -> usize{
 }
 
 fn get_node<'a>(nodes: &'a Vec<Node>, name: &str) -> &'a Node{
-    let mut x = 0;
-    while x < nodes.len(){
-        if nodes[x].name == name{
-            return &nodes[x];
-        }
-        x+=1;
-    }
-    panic!("wat");
+    return nodes.iter().find(|&n| n.name == name).unwrap();
 }
