@@ -9,13 +9,11 @@ mod day_eight;
 mod day_nine;
 
 fn main() {
-    print!("{}",day_one::tasks::task());
+    print!("\nday 1 {}",day_one::tasks::task());
+    print!("\nday 2 {}",day_two::tasks::task());
+    print!("\nday 3 {}",day_three::tasks::task());
+    print!("\nday 4 {}",day_four::tasks::task());
 
-    print!("{}",day_two::tasks::task());
-    day_three::taskone::task();
-    day_three::tasktwo::task();
-    day_four::taskone::task();
-    day_four::tasktwo::task();
     day_five::taskone::task();
     day_five::tasktwo::task();
     day_six::taskone::task();

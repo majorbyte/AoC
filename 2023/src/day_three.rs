@@ -1,2 +1,1 @@
-pub mod taskone;
-pub mod tasktwo;
+pub mod tasks;
