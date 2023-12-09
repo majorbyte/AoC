@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
@@ -36,49 +35,23 @@ fn parse_file(){
 fn get_nodes(s: &str) -> Vec<Vec<i32>>{
     let lines: Vec<_> = s.split("\r\n").collect();
 
-    return lines.iter().map(|line| line.split(" ").into_iter().map(|x| x.parse::<i32>().unwrap()).collect()).collect();
+    lines.iter().map(|line| line.split(" ").into_iter().map(|x| x.parse::<i32>().unwrap()).collect()).collect()
 }
 
 fn predict_values(nodes: Vec<Vec<i32>>) -> i32 {
-    return nodes.into_iter().map(|line| predict(line)).sum();
+    nodes.into_iter().map(|line| *line.last().unwrap() + predict(line)).sum()
 }
 
-fn predict(line: Vec<i32>) -> i32 {
+fn predict(mut line: Vec<i32>) -> i32 {
 
-    let mut l: Vec<i32> = line;
-    let mut map = HashMap::new();
-    let mut done: bool = l.iter().all(|x| x == &l[0]);
-    let mut steps = 0;
+    if line.iter().all(|x| x == &0) {
+        return *line.last().unwrap();
+    }
 
-    map.insert(steps, l.clone());
-    while !done {
-        steps += 1;
-    
-        l = l.clone().into_iter().zip(l[1..].iter()).map(|(cur, next)| next - cur).collect::<Vec<_>>();
-
-        done = l.iter().all(|x| x == &l[0]);
-        map.insert(steps, l.clone());
-
-
-    } 
-    let mut next: Vec<i32> = map.get(&(steps)).unwrap().clone();
-
-    next.push(next[0]);
-    while steps >= 1{
-        let c = map.get(&steps).unwrap().clone();
-        
-        next = map.get(&(steps-1)).unwrap().clone();
-
-        let v = next.last().unwrap() + c.last().unwrap();
-
-        next.push(v);
-
-        map.remove(&(steps-1));
-        map.insert(steps-1, next.clone());
-
-        steps -= 1;
-    }   
-
-    *next.last().unwrap()
+    line = get_diff(line);
+    *line.last().unwrap() + predict(line)
 }
 
+fn get_diff(l: Vec<i32>) -> Vec<i32>{
+    l.iter().zip(l[1..].iter()).map(|(cur, next)| next - cur).collect::<Vec<_>>()
+}
