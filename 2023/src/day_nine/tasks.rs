@@ -45,51 +45,25 @@ fn predict_values(nodes: Vec<Vec<i32>>) -> i32 {
 
 fn predict(line: Vec<i32>) -> i32 {
 
-    let mut l: Vec<i32> = line.clone();
+    let mut l: Vec<i32> = line;
     let mut map = HashMap::new();
-    let mut done: bool = l.clone().iter().all(|x| x == &l[0]);
+    let mut done: bool = l.iter().all(|x| x == &l[0]);
     let mut steps = 0;
-
-    let mut x = 0;
-    println!("");
-    x = 0;
-    while x < l.len()
-    {
-        print!(" {}", l[x]);
-        x += 1;
-    }
 
     map.insert(steps, l.clone());
     while !done {
         steps += 1;
     
-        let n: Vec<i32> = l.clone().into_iter().zip(l[1..].iter()).map(|(cur, next)| next - cur).collect();
+        l = l.clone().into_iter().zip(l[1..].iter()).map(|(cur, next)| next - cur).collect::<Vec<_>>();
 
-        println!("");
-        x = 0;
-        while x < n.len()
-        {
-            print!(" {}", n[x]);
-            x += 1;
-        }
-        done = n.iter().all(|x| x == &n[0]);
-        l = n.clone();
-        map.insert(steps, n);
+        done = l.iter().all(|x| x == &l[0]);
+        map.insert(steps, l.clone());
 
 
     } 
-    if steps == 0 {return *l.last().unwrap(); }
     let mut next: Vec<i32> = map.get(&(steps)).unwrap().clone();
-    
 
     next.push(next[0]);
-    println!("");
-    x = 0;
-    while x < next.len()
-    {
-        print!(" {}", next[x]);
-        x += 1;
-    }
     while steps >= 1{
         let c = map.get(&steps).unwrap().clone();
         
@@ -99,21 +73,12 @@ fn predict(line: Vec<i32>) -> i32 {
 
         next.push(v);
 
-        println!("\n {}",v);
-        x = 0;
-        while x < next.len()
-        {
-            print!(" {}", next[x]);
-            x += 1;
-        }
-
         map.remove(&(steps-1));
         map.insert(steps-1, next.clone());
 
         steps -= 1;
     }   
 
-    println!("\n{}",next.last().unwrap());
     *next.last().unwrap()
 }
 
