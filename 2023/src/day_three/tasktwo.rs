@@ -128,10 +128,6 @@ fn get_parts(s: String) -> i128{
                 
                 }
             }
-            print!("\nnumbers:");
-            for n in &numbers{
-                print!(" {}",n)
-            }
 
             if numbers.len() == 2{
                 part_sum += numbers[0] * numbers[1];

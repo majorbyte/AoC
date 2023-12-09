@@ -2,15 +2,17 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
 use regex::Regex;
+use std::time::Instant;
 
 
-pub fn task() {
-    parse_file();
+pub fn task() -> String{
+    parse_file()
 }
 
-fn parse_file(){
+fn parse_file() -> String {
+    let part_time = Instant::now();
     // Create a path to the desired file
-    let path = Path::new("./src/day_one/input1.txt");
+    let path = Path::new("./src/day_one/input.txt");
     let display = path.display();
 
     // Open the path in read-only mode, returns `io::Result<File>`
@@ -23,24 +25,39 @@ fn parse_file(){
     let mut s = String::new();
     match file.read_to_string(&mut s) {
         Err(why) => panic!("couldn't read {}: {}", display, why),
-        Ok(_) => print!("{} contains:\n{}", display, replace(s)),
+        Ok(_) => {
+            let data = replace(&s);
+            return format!("answer part 1:{} (in {:?})\nanswer part 2:{} (in {:?})", get_sum_task1(data.clone()),part_time.elapsed(),get_sum_task2(data) ,part_time.elapsed())
+        },
     }
 
     // `file` goes out of scope, and the "hello.txt" file gets closed    
 }
 
-fn replace(s: String) -> u128{
-    let v: Vec<&str> = s.split("\r\n").collect();
-    let mut sum: u128 = 0;
+fn replace(s: &str) -> String{
     let re = Regex::new(r"[^.0-9\s]").unwrap();
-
-    for x in v.into_iter(){
-        let n = transform(x);
-        sum += get_number(re.replace_all(&n, "").to_string());
-    }
-    
-    return sum;
+    re.replace_all(&s, "").to_string()
 }
+
+fn get_sum_task1(input: String) -> u32{
+    input.split("\r\n").map(|s| get_sum(s)).sum()
+}
+
+fn get_sum_task2(input: String) -> u32{
+    input.split("\r\n").map(|n| get_sum(&transform(n))).sum()
+}
+
+
+fn get_sum(s: &str) -> u32{
+    if s.len() == 0 {return 0;}
+
+    let first = s.chars().nth(0).unwrap().to_string();
+    let last = s.chars().last().unwrap().to_string();
+    return (first + &last ).parse::<u32>().unwrap()
+}
+
+
+
 
 fn transform(s: &str) -> String{
     let numbers = vec!["zero","one","two","three","four","five","six","seven","eight","nine"];
@@ -80,24 +97,3 @@ fn find_smallest_number(s: &str) -> &'static str {
 
     return ret;
 }
-
-
-
-fn get_number(s: String) -> u128{
-    let l = s.len();
-    match l {
-        0 => return 0,
-        1 => {
-            let n: String = s.to_owned();
-            return (n.clone() + &n).parse::<u128>().unwrap();
-        },
-        2 => return  s.parse::<u128>().unwrap(),
-        _ => {
-            let first = s.chars().nth(0).unwrap().to_string();
-            let last = s.chars().last().unwrap().to_string();
-            return (first + &last ).parse::<u128>().unwrap()
-        }
-    }
-
-}
-
