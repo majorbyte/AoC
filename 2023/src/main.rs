@@ -10,7 +10,7 @@ mod day_nine;
 mod day_ten;
 mod day_eleven;
 fn main() {
-    print!("\nday 1 {}",day_one::tasks::task());
+    /*print!("\nday 1 {}",day_one::tasks::task());
     print!("\nday 2 {}",day_two::tasks::task());
     print!("\nday 3 {}",day_three::tasks::task());
     print!("\nday 4 {}",day_four::tasks::task());
@@ -22,6 +22,6 @@ fn main() {
     day_seven::tasks::task();
     day_eight::tasks::task();
     day_nine::tasks::task();
-    day_ten::tasks::task();
+    day_ten::tasks::task();*/
     day_eleven::tasks::task();
 }

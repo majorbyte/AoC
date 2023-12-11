@@ -44,11 +44,8 @@ pub fn task() {
 fn task_1(input: String){
     let grid = get_grid(input,2);
     
-    let mut rows: Vec<usize> = vec![];
-    let mut cols: Vec<usize> = vec![];
-
-    cols = grid.iter().filter(|r| r.y == 0 && r.cost > 1 ).map(|r| r.x).collect();
-    rows = grid.iter().filter(|r| r.x == 0 && r.cost > 1 ).map(|r| r.y).collect();
+    let rows: Vec<usize>= grid.iter().filter(|r| r.x == 0 && r.cost > 1 ).map(|r| r.y).collect();
+    let cols: Vec<usize> = grid.iter().filter(|r| r.y == 0 && r.cost > 1 ).map(|r| r.x).collect();
 
     let galaxies = grid.iter().filter(|n| n.val == '#').collect::<Vec<&Node>>();
 
@@ -96,71 +93,38 @@ fn task_1(input: String){
 
 fn get_grid(input: String, cost:u32) -> Vec<Node> {
 
-    let mut grid = input
-    .lines()
+    let lines = input.lines();
+
+    let mut grid = lines
     .enumerate()
     .map(|(y, line)| line
         .chars()
         .enumerate()
         .map(|(x, c)| Node{x,y,val:c,cost:1})
         .collect::<Vec<Node>>())
-    .collect::<Vec<Vec<Node>>>();
+    .flatten()
+    .collect::<Vec<Node>>();
 
-    fix_column_cost(&mut grid, cost);
-    fix_row_cost(&mut grid,cost);
-    
-    grid.into_iter().flatten().collect()
+    fix_costs(&mut grid, cost);
+
+    grid
 }
 
-fn fix_column_cost(grid: &mut Vec<Vec<Node>>, cost:u32) {
-    let mut y = grid.len()-1;
-    while y > 0{
-        let mut x = 0;
-        while x < grid[y].len(){
-            if grid[y][x].val == '#' { 
-                x+=1;
-                break; 
-            }
-            x+=1;
+fn fix_costs(nodes: &mut  Vec<Node>, cost:u32){
+
+    let size = (nodes.len() as f64).sqrt() as usize;
+    for n in nodes.chunks_mut(size).filter(|x| x.iter().all(|n| n.val == '.')){
+        for node in n.iter_mut()   {
+            node.set_cost(cost);
         }
-        if x == grid[y].len() && grid[y][x-1].val != '#' {
-            x = 0;
-            while x < grid[y].len(){
-                grid[y][x].set_cost(cost);
-                x+=1;
-            }                
+    }
+
+    for x in 0..size{
+        let mut chunks = nodes.iter_mut().filter(|node| node.x==x).collect::<Vec<_>>();
+        if chunks.iter().any(|x| x.val != '.') {continue;}
+
+        for node in chunks.iter_mut()   {
+            node.set_cost(cost);
         }
-        y -= 1;
     }
 }
-
-
-fn fix_row_cost(grid: &mut Vec<Vec<Node>>, cost:u32) {
-    let mut x = grid[0].len()-1;
-    while x > 0{
-        let mut y = 0;
-        while y < grid.len(){
-            if grid[y][x].val == '#' { 
-                y+=1;
-                break; 
-            }
-            y+=1;
-        }
-        if y == grid.len() && grid[y-1][x].val != '#' {
-            y = 0;
-            while y < grid.len(){
-                grid[y][x].set_cost(cost);
-                y+=1;
-            }                
-        }
-        x -= 1;
-    }}
-
-/*
-fn fix_row_cost(grid: &mut Vec<Vec<&mut Node>>, cost:u32) {
-    grid
-        .into_iter()
-        .filter(|row| row.iter().all(|c| c.val != '#'))
-        .map(|nodes| nodes.into_iter().map(|node | node.set_cost(cost)));
-}
-*/
