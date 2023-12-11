@@ -59,14 +59,14 @@ fn tasks(input: String){
         galaxies[i+1..].iter().filter(|right| !left.equals(right)).for_each(|right| 
             pairs.push((left,right))));
 
-    let t1 = pairs.iter().fold(0, |t, (left,right) | t + cost(&rows,&cols,&left, &right,2) );
-    let t2 = pairs.iter().fold(0, |t, (left,right) | t + cost(&rows,&cols,&left, &right,1_000_000) );
+    let t1 = pairs.iter().fold(0, |t, (left,right) | t + cost(&rows,&cols,&left, &right,1) );
+    let t2 = pairs.iter().fold(0, |t, (left,right) | t + cost(&rows,&cols,&left, &right,999_999) );
 
     print!("\ncost 1: {}\ncost 2: {}", t1, t2);
 }
 
 fn cost(rows: &Vec<usize>, cols: &Vec<usize>, left:&Node, right:&Node, tax: usize) -> usize{
-    left.distance(right) + row_count(rows, &left.y, &right.y) * (tax-1) +  col_count(cols, &left.x, &right.x) * (tax-1)
+    left.distance(right) + (row_count(rows, &left.y, &right.y) +  col_count(cols, &left.x, &right.x)) * tax
 }
 fn row_count(rows: &Vec<usize>, ly:&usize, ry:&usize) -> usize{
     rows.iter().filter(|r| (ly > r  && ry < r ) || (ry > r  && ly < r ) ).count()
