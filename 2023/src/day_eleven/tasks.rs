@@ -18,6 +18,10 @@ impl Node{
     fn equals(&self, other: &Self) -> bool {
         self.x == other.x && self.y == other.y 
     }
+
+    fn distance(&self, other: &Self) -> usize{
+        self.x.abs_diff(other.x) + self.y.abs_diff(other.y)
+    }
 }
 
 pub fn task() {
@@ -36,95 +40,69 @@ pub fn task() {
     match file.read_to_string(&mut s) {
         Err(why) => panic!("couldn't read {}: {}", display, why),
         Ok(_) => { 
-            task_1(s);
+            tasks(s);
          }
     }
 }
 
-fn task_1(input: String){
-    let grid = get_grid(input,2);
+fn tasks(input: String){
+    let grid = get_grid(input);
     
     let rows: Vec<usize>= grid.iter().filter(|r| r.x == 0 && r.cost > 1 ).map(|r| r.y).collect();
     let cols: Vec<usize> = grid.iter().filter(|r| r.y == 0 && r.cost > 1 ).map(|r| r.x).collect();
 
     let galaxies = grid.iter().filter(|n| n.val == '#').collect::<Vec<&Node>>();
 
-    let mut pairs: Vec<(&Node,&Node)> = vec![];
-    /*for p1 in galaxies.iter(){
-        println!("{}",pairs.len());
-        for p2 in galaxies.iter(){
-            if p1.equals(p2) {continue;}
+    let mut pairs : Vec<(&Node,&Node)> = vec![]; 
 
-            let found = pairs.iter().find(|pair| (pair.0.equals(p1) && pair.1.equals(p2)) || (pair.1.equals(p1) && pair.0.equals(p2)));
-            if !found.is_none() {continue;}
+    galaxies.iter().enumerate().for_each(|(i, left)|  
+        galaxies[i+1..].iter().filter(|right| !left.equals(right)).for_each(|right| 
+            pairs.push((left,right))));
 
-            pairs.push((p1,p2));
-        }
-    }*/
+    let t1 = pairs.iter().fold(0, |t, (left,right) | t + cost(&rows,&cols,&left, &right,2) );
+    let t2 = pairs.iter().fold(0, |t, (left,right) | t + cost(&rows,&cols,&left, &right,1_000_000) );
 
-    for (i, el1) in galaxies.iter().enumerate() {
-        for el2 in galaxies[i+1..].iter() {
-            if el1.equals(el2) {continue;}
-            pairs.push((el1,el2));
-        }
-    }
-
-    let mut total_cost_1 = 0;
-    let mut total_cost_2 = 0;
-    for pair in pairs.iter(){
-
-        /*
-            cost = abs(x1-x2) + abs(y1-y2) +  number of expensive lines
-        
-         */
-        let cost = pair.0.x.abs_diff(pair.1.x) + pair.0.y.abs_diff(pair.1.y);
-
-        let rows_crossed = rows.iter().filter(|r| (&pair.0.y > r  && &pair.1.y < r ) || (&pair.1.y > r  && &pair.0.y < r ) ).count();
-        let cols_crossed = cols.iter().filter(|r| (&pair.0.x > r  && &pair.1.x < r ) || (&pair.1.x > r  && &pair.0.x < r ) ).count();
-
-        total_cost_1 += cost + rows_crossed + cols_crossed;
-        total_cost_2 += cost + rows_crossed * (1000000-1)  + cols_crossed * (1000000-1);
-
-    }
-
-    print!("\ncost 1: {}\ncost 2: {}", total_cost_1, total_cost_2);
-
+    print!("\ncost 1: {}\ncost 2: {}", t1, t2);
 }
 
-fn get_grid(input: String, cost:u32) -> Vec<Node> {
+fn cost(rows: &Vec<usize>, cols: &Vec<usize>, left:&Node, right:&Node, tax: usize) -> usize{
+    left.distance(right) + row_count(rows, &left.y, &right.y) * (tax-1) +  col_count(cols, &left.x, &right.x) * (tax-1)
+}
+fn row_count(rows: &Vec<usize>, ly:&usize, ry:&usize) -> usize{
+    rows.iter().filter(|r| (ly > r  && ry < r ) || (ry > r  && ly < r ) ).count()
+}
+fn col_count(cols: &Vec<usize>, lx:&usize, rx:&usize) -> usize{
+    cols.iter().filter(|r| (lx > r  && rx < r ) || (rx > r  && lx < r ) ).count()
+}
 
-    let lines = input.lines();
 
-    let mut grid = lines
+fn get_grid(input: String) -> Vec<Node> {
+
+    let mut grid = input.lines()
     .enumerate()
-    .map(|(y, line)| line
-        .chars()
-        .enumerate()
-        .map(|(x, c)| Node{x,y,val:c,cost:1})
-        .collect::<Vec<Node>>())
+    .map(|(y, line)| {
+        let cost = if line.chars().all(|c| c == '.') { 2 } else { 1 };
+        line
+            .chars()
+            .enumerate()
+            .map(|(x, c)| Node{x,y,val:c,cost})
+            .collect::<Vec<Node>>()
+    })
     .flatten()
     .collect::<Vec<Node>>();
 
-    fix_costs(&mut grid, cost);
+    fix_costs(&mut grid);
 
     grid
 }
 
-fn fix_costs(nodes: &mut  Vec<Node>, cost:u32){
+fn fix_costs(nodes: &mut  Vec<Node>){
 
     let size = (nodes.len() as f64).sqrt() as usize;
-    for n in nodes.chunks_mut(size).filter(|x| x.iter().all(|n| n.val == '.')){
-        for node in n.iter_mut()   {
-            node.set_cost(cost);
-        }
-    }
-
+    
     for x in 0..size{
-        let mut chunks = nodes.iter_mut().filter(|node| node.x==x).collect::<Vec<_>>();
-        if chunks.iter().any(|x| x.val != '.') {continue;}
+        if nodes.iter().filter(|node| node.x == x).any(|node| node.val != '.') {continue;}
 
-        for node in chunks.iter_mut()   {
-            node.set_cost(cost);
-        }
+        nodes.iter_mut().filter(|node| node.x==x).for_each(|node| node.set_cost(2));
     }
 }
