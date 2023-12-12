@@ -22,38 +22,46 @@ pub fn task() {
     match file.read_to_string(&mut s) {
         Err(why) => panic!("couldn't read {}: {}", display, why),
         Ok(_) => { 
-            task_1(s,part_time);
+            task_1(&s, part_time);
+            task_2(s, part_time);
          }
     }
 }
 
-fn task_1(input:String, time:Instant){
-    let count = input.lines().fold(0, |t, line| t + parse_line(line));
+fn task_1(input:&String, time:Instant){
+    let count = input.lines().fold(0, |t, line| t + parse_line(line,1));
 
     println!("\npart 1 {}  (in {:?})", count, time.elapsed());
 }
+fn task_2(input:String, time:Instant){
+    let count = input.lines().fold(0, |t, line| t + parse_line(line,5));
 
-fn parse_line(line: &str) -> usize{
+    println!("\npart 2 {}  (in {:?})", count, time.elapsed());
+}
+
+fn parse_line(line: &str, cnt: usize) -> usize{
 
     let parts = line.split(" ").collect::<Vec<&str>>();
     let mask = parts[1].split(",").map(|x| x.parse::<usize>().unwrap()).collect::<Vec<usize>>();
 
-    let p = &parts[0].chars().collect::<Vec<char>>()[..];
-    let n = &(vec!['?'])[..];
-    let p1 = [p,n,p,n,p,n,p,n,p].concat();
-
+    let mut q = parts[0].chars().collect::<Vec<char>>();
+    let n = &q.clone();
+    for _x in 1..cnt{
+        q.push('?');
+        n.iter().for_each(|c| q.push(*c));
+    }
+    
     let l = &mask.len();
-    let m = mask.into_iter().cycle().take(l*5).collect::<Vec<usize>>();
+    let m = mask.into_iter().cycle().take(l*cnt).collect::<Vec<usize>>();
 
     let mut mem:HashMap<String, usize> = HashMap::new();
-    let x = count(&p1,&m, &mut mem);
-    x
+    count(&q,&m, &mut mem)
 }
 
-fn count(pattern: &[char], mask: &Vec<usize>, mem: &mut HashMap<String, usize>) -> usize{
+fn count(pattern: &[char], mask: &[usize], mem: &mut HashMap<String, usize>) -> usize{
 
     let k1: String = pattern.to_vec().into_iter().collect();
-    let key:String = format!("{}:{}", k1, mask.clone().into_iter().map(|x| x.to_string()).collect::<String>());
+    let key:String = format!("{}:{}", k1, mask.into_iter().map(|x| x.to_string()).collect::<String>());
     if mem.contains_key(&key) {return *mem.get(&key).unwrap();}
 
     let r: usize;
@@ -82,8 +90,8 @@ fn count(pattern: &[char], mask: &Vec<usize>, mem: &mut HashMap<String, usize>) 
         return r;
     }
     if pattern[0] == '#' {
-        let mut remain =mask.clone();
-        let m = remain.remove(0);
+        let remain = &mask[1..mask.len()];
+        let m = mask[0];
         let mut i = 0;
         while i < m{
             if pattern[i] == '.' { return 0; }
@@ -106,17 +114,17 @@ fn count(pattern: &[char], mask: &Vec<usize>, mem: &mut HashMap<String, usize>) 
 
         return r;
     }
-    let n = vec!['#'];
-    let p = &pattern[1..];
-    let p1 =[&n[..],p].concat();
-    let m = vec!['.'];
-    let p2 =[&m[..],p].concat();
 
+    let mut v: Vec<char> = vec!['#'];
+    pattern[1..].iter().for_each(|c| v.push(*c));
 
+    let x = count(&v, &mask, mem);
 
-    let x = count(&p1, &mask, mem);
-    let y =  count(&p2, &mask, mem);
+    v = vec!['.'];
+    pattern[1..].iter().for_each(|c| v.push(*c));
+
+    let y =  count(&v, &mask, mem);
+
     if !mem.contains_key(&key) { mem.insert(key,x+y); }
-
     x+y
 }
