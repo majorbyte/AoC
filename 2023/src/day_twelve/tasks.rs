@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
@@ -44,40 +45,39 @@ fn parse_line(line: &str) -> usize{
     let l = &mask.len();
     let m = mask.into_iter().cycle().take(l*5).collect::<Vec<usize>>();
 
-    let mut mem:Vec<(String,usize)> =vec![];
+    let mut mem:HashMap<String, usize> = HashMap::new();
     let x = count(&p1,&m, &mut mem);
     x
 }
 
-fn count(pattern: &[char], mask: &Vec<usize>, mem: &mut Vec<(String, usize)>) -> usize{
+fn count(pattern: &[char], mask: &Vec<usize>, mem: &mut HashMap<String, usize>) -> usize{
 
     let k1: String = pattern.to_vec().into_iter().collect();
     let key:String = format!("{}:{}", k1, mask.clone().into_iter().map(|x| x.to_string()).collect::<String>());
-    let result = mem.iter().find(|k| k.0 == key);
-    if !result.is_none() {return result.unwrap().1;}
+    if mem.contains_key(&key) {return *mem.get(&key).unwrap();}
 
     let r: usize;
     if pattern.len() == 0 {
         r = if mask.len() == 0 {1} else {0};
-        mem.push((key,r));
+        if !mem.contains_key(&key) { mem.insert(key,r); }
         return r;
     }
     if mask.len() == 0 {
         r =if pattern.iter().any(|c| c == &'#') {0} else {1};
-        mem.push((key,r));
+        if !mem.contains_key(&key) { mem.insert(key,r); }
         return r;
     }
 
     if pattern.len() < mask.iter().sum::<usize>() + mask.len() - 1 {
         r = 0;
-        mem.push((key,r));
+        if !mem.contains_key(&key) { mem.insert(key,r); }
         return r;
     }
 
     if pattern[0] == '.' {
         let p = &pattern[1..];
         r = count(p, mask,mem);
-        mem.push((key,r));
+        if !mem.contains_key(&key) { mem.insert(key,r); }
 
         return r;
     }
@@ -95,14 +95,14 @@ fn count(pattern: &[char], mask: &Vec<usize>, mem: &mut Vec<(String, usize)>) ->
 
         if x > pattern.len(){
             r = count(&[], &remain,mem);
-            mem.push((key,r));
+            if !mem.contains_key(&key) { mem.insert(key,r); }
     
             return r;    
         }
 
         let p = &pattern[x..pattern.len()];
         r = count(p, &remain,mem);
-        mem.push((key,r));
+        if !mem.contains_key(&key) { mem.insert(key,r); }
 
         return r;
     }
@@ -116,6 +116,7 @@ fn count(pattern: &[char], mask: &Vec<usize>, mem: &mut Vec<(String, usize)>) ->
 
     let x = count(&p1, &mask, mem);
     let y =  count(&p2, &mask, mem);
-    mem.push((key,x+y));
+    if !mem.contains_key(&key) { mem.insert(key,x+y); }
+
     x+y
 }
