@@ -1,7 +1,8 @@
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
-use std::vec;
+use std::time::Instant;
+
 
 struct Node{
     x: usize,
@@ -25,6 +26,8 @@ impl Node{
 }
 
 pub fn task() {
+    let part_time = Instant::now();
+
     // Create a path to the desired file
     let path = Path::new("./src/day_eleven/input.txt");
     let display = path.display();
@@ -40,12 +43,12 @@ pub fn task() {
     match file.read_to_string(&mut s) {
         Err(why) => panic!("couldn't read {}: {}", display, why),
         Ok(_) => { 
-            tasks(s);
+            tasks(s,part_time);
          }
     }
 }
 
-fn tasks(input: String){
+fn tasks(input: String, time: Instant){
     let grid = get_grid(input);
     
     let rows: Vec<usize>= grid.iter().filter(|r| r.x == 0 && r.cost > 1 ).map(|r| r.y).collect();
@@ -53,26 +56,24 @@ fn tasks(input: String){
 
     let galaxies = grid.iter().filter(|n| n.val == '#').collect::<Vec<&Node>>();
 
-    let mut pairs : Vec<(&Node,&Node)> = vec![]; 
+    let (t1,t2) = galaxies.iter().enumerate().flat_map(|(i, &left)|  
+            galaxies[i+1..].iter().filter(|&right| !&left.equals(&right)).map(|&right| (left,right)).collect::<Vec<_>>())
+        .fold((0,0), |(t1, t2), (left,right) | cost(&rows,&cols,&left, &right,1,999_999, t1, t2) );
 
-    galaxies.iter().enumerate().for_each(|(i, left)|  
-        galaxies[i+1..].iter().filter(|right| !left.equals(right)).for_each(|right| 
-            pairs.push((left,right))));
-
-    let t1 = pairs.iter().fold(0, |t, (left,right) | t + cost(&rows,&cols,&left, &right,1) );
-    let t2 = pairs.iter().fold(0, |t, (left,right) | t + cost(&rows,&cols,&left, &right,999_999) );
-
-    print!("\ncost 1: {}\ncost 2: {}", t1, t2);
+    print!("\ncost 1: {}\ncost 2: {} in {:?}", t1, t2,time.elapsed());
 }
 
-fn cost(rows: &Vec<usize>, cols: &Vec<usize>, left:&Node, right:&Node, tax: usize) -> usize{
-    left.distance(right) + (row_count(rows, &left.y, &right.y) +  col_count(cols, &left.x, &right.x)) * tax
+fn cost(rows: &Vec<usize>, cols: &Vec<usize>, left:&Node, right:&Node, cost_1: usize, cost_2: usize, total_1: usize, total_2: usize) -> (usize, usize){
+    let d =  left.distance(right);
+    let cnt = row_count(rows, &left.y, &right.y) +  col_count(cols, &left.x, &right.x);
+    
+    (total_1 + d + cnt*cost_1, total_2 + d + cnt*cost_2)
 }
 fn row_count(rows: &Vec<usize>, ly:&usize, ry:&usize) -> usize{
-    rows.iter().filter(|r| (ly > r  && ry < r ) || (ry > r  && ly < r ) ).count()
+    rows.iter().filter(|&r| (ly > r  && ry < r ) || (ry > r  && ly < r ) ).count()
 }
 fn col_count(cols: &Vec<usize>, lx:&usize, rx:&usize) -> usize{
-    cols.iter().filter(|r| (lx > r  && rx < r ) || (rx > r  && lx < r ) ).count()
+    cols.iter().filter(|&r| (lx > r  && rx < r ) || (rx > r  && lx < r ) ).count()
 }
 
 
