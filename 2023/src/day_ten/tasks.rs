@@ -70,7 +70,7 @@ fn task_2(grid: Vec<Vec<char>>){
 
     let mut tile_count = 0;
 
-    for mut y in 0..grid.len(){
+    for y in 0..grid.len(){
         let mut intersections = 0;
         let mut x = 0;
 
@@ -111,7 +111,6 @@ fn task_2(grid: Vec<Vec<char>>){
             }
             x+=1;
         }
-        y+=1;
     }
 
     print!("number of enclosed tiles: {}",tile_count);
