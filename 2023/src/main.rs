@@ -10,6 +10,7 @@ mod day_nine;
 mod day_ten;
 mod day_eleven;
 mod day_twelve;
+mod day_thirteen;
 fn main() {
     if false {
     print!("\nday 1 {}",day_one::tasks::task());
@@ -25,6 +26,8 @@ fn main() {
     day_eight::tasks::task();
     day_nine::tasks::task();
     day_ten::tasks::task();
-    day_eleven::tasks::task();}
+    day_eleven::tasks::task();
     day_twelve::tasks::task();
+}
+day_thirteen::tasks::task();
 }
