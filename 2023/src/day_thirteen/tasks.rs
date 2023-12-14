@@ -36,26 +36,17 @@ fn task_1(input: String){
 fn task_2(input: String){
     let blocks: Vec<&str> = input.split("\r\n\r\n").collect();
 
-    let cost:usize = blocks.iter().map(|b| get_overhead_smudge(b)).sum();
+    let cost:usize = blocks.iter().map(|b| get_cost_smudges(b)).sum();
     println!("task 2 cost is: {}",cost);
 }
 
 
 fn get_overhead(block: &str )-> usize{
 
-    let mut cost = get_cost_vertical(&block,None);
-    if cost == 0 {
-        cost = get_cost_horizontal(&block,None) * 100;
-    }
-
-    println!("cost: {}",cost);
-    cost
-}
-fn get_overhead_smudge(block: &str )-> usize{
-
-    let cost = get_cost_smudges(&block) ;
-
-    cost
+    let cost = get_cost_vertical(&block,None);
+    if cost != 0 { return cost; }
+    
+    get_cost_horizontal(&block,None) * 100
 }
 
 fn get_cost_horizontal(block: &str, old_cost:Option<usize>) -> usize {
@@ -71,14 +62,7 @@ fn get_cost_horizontal(block: &str, old_cost:Option<usize>) -> usize {
         }
     });
 
-    let mut x = 0;
-    let mut indexes_to_check: Vec<usize> = vec![];
-    while x < pattern.len()-1{
-        if pattern[x] == pattern[x+1]{
-            indexes_to_check.push(x);
-        }
-        x+=1;
-    }
+    let indexes_to_check: Vec<usize>  = pattern[0..pattern.len()-1].iter().enumerate().filter(|(x, _)|  pattern[*x] == pattern[x+1] ).map(|(x,_)| x).collect();
 
     for i in indexes_to_check{
         let mut x = i;
@@ -105,18 +89,14 @@ fn get_cost_vertical(block: &str, old_cost:Option<usize>) -> usize {
 
     let mut patterns: Vec<String> = vec![];
 
-    let mut x = 0;
     let lines:Vec<Vec<char>> = block.split("\r\n").map(|l| l.chars().collect::<Vec<char>>()).collect::<Vec<Vec<char>>>();
 
-    while x < lines[0].len(){
-        let mut y =0;
+    for x in 0..lines[0].len(){
         let mut p:Vec<char> = vec![];
-        while y < lines.len(){
+        for y  in 0..lines.len(){
             p.push(lines[y][x]);
-            y+=1;
         }
         patterns.push(p.into_iter().collect());
-        x+=1;
     }
     patterns.iter().enumerate().for_each(|(i, k)|{
         if !map.contains_key(k) {
@@ -128,14 +108,7 @@ fn get_cost_vertical(block: &str, old_cost:Option<usize>) -> usize {
         }
     });
 
-    x = 0;
-    let mut indexes_to_check: Vec<usize> = vec![];
-    while x < pattern.len()-1{
-        if pattern[x] == pattern[x+1]{
-            indexes_to_check.push(x);
-        }
-        x+=1;
-    }
+    let indexes_to_check: Vec<usize>  = pattern[0..pattern.len()-1].iter().enumerate().filter(|(x, _)|  pattern[*x] == pattern[x+1] ).map(|(x,_)| x).collect();
 
     for i in indexes_to_check{
         let mut x = i;
@@ -160,7 +133,6 @@ fn get_cost_vertical(block: &str, old_cost:Option<usize>) -> usize {
 
 fn get_cost_smudges(block: &str) -> usize {
     
-
     let mut lines:Vec<Vec<char>> = block.split("\r\n").map(|l| l.chars().collect::<Vec<char>>()).collect::<Vec<Vec<char>>>();
     let old_cost = get_overhead(&block);
     let mut cost = old_cost.clone();
@@ -179,8 +151,6 @@ fn get_cost_smudges(block: &str) -> usize {
             lines[y][x] = c;
         }
     }
-
-    println!("old cost {}, new {}",old_cost, cost);
 
     cost
 }

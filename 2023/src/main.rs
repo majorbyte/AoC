@@ -29,7 +29,7 @@ fn main() {
     day_ten::tasks::task();
     day_eleven::tasks::task();
     day_twelve::tasks::task();
-    day_thirteen::tasks::task();
 }
+day_thirteen::tasks::task();
 day_fourteen::tasks::task();
 }
