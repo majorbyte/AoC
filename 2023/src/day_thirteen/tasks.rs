@@ -20,7 +20,7 @@ pub fn task() {
     match file.read_to_string(&mut s) {
         Err(why) => panic!("couldn't read {}: {}", display, why),
         Ok(_) => { 
-            //task_1(s.clone());
+            task_1(s.clone());
             task_2(s);
          }
     }
@@ -80,7 +80,6 @@ fn get_cost_horizontal(block: &str, old_cost:Option<usize>) -> usize {
         x+=1;
     }
 
-    let mut c = 0;
     for i in indexes_to_check{
         let mut x = i;
         let mut y = i+1;
@@ -98,7 +97,7 @@ fn get_cost_horizontal(block: &str, old_cost:Option<usize>) -> usize {
 
         } 
     }
-    c
+    0
 }
 fn get_cost_vertical(block: &str, old_cost:Option<usize>) -> usize {
     let mut map: HashMap<String, char> = HashMap::new();
@@ -138,7 +137,6 @@ fn get_cost_vertical(block: &str, old_cost:Option<usize>) -> usize {
         x+=1;
     }
 
-    let mut c = 0;
     for i in indexes_to_check{
         let mut x = i;
         let mut y = i+1;
@@ -155,7 +153,7 @@ fn get_cost_vertical(block: &str, old_cost:Option<usize>) -> usize {
             if old_cost.unwrap() != i+1 {return i+1;}
         } 
     }
-    c
+    0
 }
 
 
