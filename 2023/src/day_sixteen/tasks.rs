@@ -148,31 +148,19 @@ fn walk(s_x:usize,s_y:usize, d:u8, grid: &mut Vec<Vec<Node>>) -> usize {
                         grid[y][x].energized();
                         let node = &grid[y][x];
 
-                        (up,down) = match node.c {
-                            '|' => (node.y > 0, node.y < grid.len()-1),
-                            '/' => //(false, node.y < grid.len()-1), // If I use this instead of the below, I get the wrong answer
-                                {
-                                    if node.y < grid.len()-1{
-                                        to_visit.push_front((x,y+1,1));
-                                    }
-                                    break;
-                                },
-                            '\\' => //(node.y > 0 , false),/*{
-                                {
-                                    if node.y > 0 {
-                                        to_visit.push_front((x,y-1,3));
-                                     }
-                                    break;
-                                },
-                            
-            
+                        (up, down) = match node.c {
+                            '|' =>  ( node.y > 0, node.y < grid.len()-1),
+                            '/' => (false, node.y < grid.len()-1), // If I use this instead of the below, I get the wrong answer
+                            '\\' => (node.y > 0 , false),
                             _ => (false,false)
                         };
-
-                        if down {to_visit.push_front((x,y+1, 1));}
                         if  up  {to_visit.push_front((x,y-1, 3));}
-                        if down | up {break}
-                   }
+                        if down {to_visit.push_front((x,y+1, 1));}
+                        match node.c {
+                            '|' | '/' | '\\' => break,
+                            _ => ()
+                        }
+                    }
                 },
                 0 => { // Right
                     while x < grid[0].len() && !up && !down{
