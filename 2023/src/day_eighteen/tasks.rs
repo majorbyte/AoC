@@ -22,36 +22,56 @@ pub fn task() {
         Err(why) => panic!("couldn't read {}: {}", display, why),
         Ok(_) => { 
             task_1(&s);
+            task_2(&s);
          }
     }
 }
 
 struct Node{
     direction: char,
-    length:i128,
-    color: Vec<char>
+    length:i128
 }
 
-fn node(data:Vec<&str>) -> Node{
-
+fn node1(data:Vec<&str>) -> Node{
     let direction = data[0].chars().collect::<Vec<_>>()[0];
     let length = data[1].parse::<i128>().unwrap();
+    return Node{direction, length};
+}
+
+fn node2(data:Vec<&str>) -> Node{
     let color = data[2].chars().collect_vec();
-    return Node{direction, length, color};
+    let direction = match color[7]{
+        '0' =>  'R',
+        '1' =>  'D',
+        '2' =>  'L',
+        '3' =>  'U',
+        _ => panic!("unknown")
+    };
+    let src = color[2..7].iter().collect::<String>();
+    let length = i128::from_str_radix(&src, 16).unwrap();
+
+    return Node{direction, length};
 }
 
 
 fn task_1(input: &str) {
-    let path:Vec<Node> = input.split("\r\n").map(|l| node(l.split(" ").collect_vec())).collect();
+    let path:Vec<Node> = input.split("\r\n").map(|l| node1(l.split(" ").collect_vec())).collect();
+    println!("Task 1 answer: {}",calc(path));
+}
+
+fn task_2(input: &str) {
+    let path:Vec<Node> = input.split("\r\n").map(|l| node2(l.split(" ").collect_vec())).collect();
+    println!("Task 2 answer: {}",calc(path));
+}
 
 
+fn calc(path:Vec<Node>) -> i128{
     let mut x:i128 = 0;
     let mut y:i128 = 0;
 
     let mut vertices = vec![[0,0]];
 
     path.iter().for_each(|node| {
-        //console.dir(node);
         match node.direction{
             'R' => x += node.length,
             'L' => x -= node.length,
@@ -65,7 +85,6 @@ fn task_1(input: &str) {
     let mut left:i128 = 0;
     let mut right:i128 = 0;
   
-    //for (let i = 0; i < vertices.length - 1; i++) {
     for i in 0..vertices.len()-1 {
       left += vertices[i][0] * vertices[i + 1][1];
       right += vertices[i][1] * vertices[i + 1][0];
@@ -77,5 +96,5 @@ fn task_1(input: &str) {
 
     let length = path.iter().fold(0,|p,c| p + c.length);
   
-    print!("{}", shoelace + length / 2 + 1);
+    shoelace + length / 2 + 1
 }
